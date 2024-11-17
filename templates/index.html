@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Email Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Phishing Email Detector</h2>
+        <form id="emailForm">
+            <textarea id="emailText" placeholder="Paste your email content here..."></textarea>
+            <button type="submit">Detect</button>
+        </form>
+        <div class="output" id="output"></div>
+    </div>
+
+    <script>
+        document.getElementById("emailForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const emailText = document.getElementById("emailText").value;
+
+            const response = await fetch("/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: `email_text=${encodeURIComponent(emailText)}`,
+            });
+
+            const result = await response.json();
+            const outputDiv = document.getElementById("output");
+            outputDiv.innerHTML = `
+                <h3>Prediction: ${result.prediction}</h3>
+                <p>Confidence: ${(result.confidence * 100).toFixed(2)}%</p>
+                <h4>All Probabilities:</h4>
+                <ul>
+                    ${Object.entries(result.all_probabilities)
+                        .map(([label, prob]) => `<li>${label}: ${(prob * 100).toFixed(2)}%</li>`)
+                        .join("")}
+                </ul>
+            `;
+        });
+    </script>
+</body>
+</html>
